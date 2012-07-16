@@ -15,7 +15,7 @@ class CruisecontrolrbToHipchat < Sinatra::Base
 
     unless status_hash.empty?        
       if status_hash[:activity] == "Building" and @activity != "Building"
-        Hipchat.new.hip_post "CruiseControl has started a #{status_hash[:link_to_build]}."
+        Hipchat.hip_post "CruiseControl has started a #{status_hash[:link_to_build]}."
         @activity = "Building"
       # there might be a more clever way to structure this.
       elsif (@activity.nil? and @status.nil?) or 
@@ -27,7 +27,7 @@ class CruisecontrolrbToHipchat < Sinatra::Base
       
         message = "Current+build+status:+#{status_hash[:link_to_build]}"
           
-        Hipchat.new.hip_post message, color
+        Hipchat.hip_post message, color
       end
     end
   end
@@ -36,3 +36,4 @@ class CruisecontrolrbToHipchat < Sinatra::Base
     "howdy!"
   end
 end
+
