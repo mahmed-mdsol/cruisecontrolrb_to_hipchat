@@ -14,11 +14,12 @@ class Hipchat
       :message_format => 'html',
       :notify => '1', # default is 0, but I like notifications
       :color => 'yellow',
-      :format => 'json'
+      :format => 'json',
+      :message => '' # This has to be overridden, btw.
     }
 
     def hip_post(message, options = {})
-      self.post("https://api.hipchat.com/v1/rooms/message?" + query_parameters(options))
+      self.post("https://api.hipchat.com/v1/rooms/message?" + query_parameters(options.merge(:message => message)))
     end
 
     private
