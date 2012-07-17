@@ -1,6 +1,10 @@
-This is a little Sinatra app notifies Hipchat of any changes in the build status on your CruiseControl.rb install.
+This is a little Sinatra app notifies Hipchat of any changes in the build status on your CruiseControl.rb install (with a piratey flair!)
 
-Heroku-ready! Just follow these steps:
+Adapted from andrewpbrett/cruisecontrolrb_to_hipchat and customized a bit for my own use.
+
+## Heroku-ready! 
+
+Just follow these steps:
 
 1. Grab a copy of the source
 
@@ -33,3 +37,48 @@ Heroku-ready! Just follow these steps:
 6. Set up something to ping your app regularly in order to [prevent it from idling](http://stackoverflow.com/questions/5480337/easy-way-to-prevent-heroku-idling). The New Relic add-on seems to do the trick, but so does a cron job, pingdom, etc., etc., etc. ...
 
 7. Have a beer while you wait for your first notification in Hipchat.
+
+## Without Heroku
+
+The run.rb script can be used if you're not using heroku (because I'm not (yet)). At the bare minimum, you need the following environment variables available when you run the script:
+
+```
+HIPCHAT_AUTH_TOKEN
+HIPCHAT_FROM
+HIPCHAT_ROOM_ID
+
+CC_URL # CruiseControl URL
+
+CC_USERNAME (if needed)
+CC_PASSWORD (if needed)
+```
+
+I've been using a conf.rb file to set all these options before running the script (eventually, I'll stop being lazy and include proper command line arguments)
+
+```ruby
+# ./conf.rb
+
+# Hipchat Envs
+ENV['HIPCHAT_AUTH_TOKEN'] = 'myhipchatauthtoken'
+ENV['HIPCHAT_FROM'] = "Cap'n Cruise"
+ENV['HIPCHAT_ROOM_ID'] = "Gilligan's Island"
+
+# Cruise watcher envs
+ENV['POLLING_INTERVAL'] = '1' #Every minute
+ENV['CC_URL'] = 'http://cruise-control.myserver.com'
+ENV["CC_USERNAME"] = "" 
+ENV["CC_PASSWORD"] = ""
+
+# CAPN_CRUISE Stuff!
+ENV['CAPN_CRUISE_LOCALE'] = 'pirate' # Right now, only pirate and normal are available
+ENV['CAPN_CRUISE_CALLBACKS'] = "Blamer, CovCukeNotifier" # Note that these'll be loaded and run in order
+```
+
+To actually run it...
+
+```
+bundle install
+bundle exec ruby -r conf run.rb
+```
+
+That's all, folks! :D
