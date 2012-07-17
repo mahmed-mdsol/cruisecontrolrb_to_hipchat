@@ -1,9 +1,10 @@
 require 'yaml'
-require './hipchat'
-require './cruisecontrolrb'
+require 'hipchat'
+require 'cruisecontrolrb'
 
 class CruiseResponderTask
 	attr_accessor :ccrb, :config, :locale, :activity, :status
+	attr_reader :callbacks
 
 	BUILDING_STATUS = "Building"
 	RESPONSES_FILENAME = 'responses.yml'
@@ -51,6 +52,7 @@ class CruiseResponderTask
 			reload_responses
 		end
 		self.locale = response_locale.to_sym
+		@callbacks ||= []
 	end
 
 	# Set the responses to the responses in the responses.yml file
@@ -83,17 +85,20 @@ class CruiseResponderTask
 			if @activity != new_activity
 				# The activity changed
 				# Notify the hipsters!
+
 				# Interpolate the build_url into the response and the lastBuildStatus if needed
 				status_sym = new_activity.downcase.to_sym
 				message = (responses[status_sym] || 'Build status: %s') % [status_hash[:build_url], status_hash[:lastBuildStatus]]
+				
+				# Callbacks
+				callbacks.each{|callback| callback.before_response(status_hash, self)}
+
 				Hipchat.hip_post(message, :color => colors[status_sym])
+				
+				@activity = new_activity
+				# Call callbacks
+				callbacks.each{|callback| callback.after_response(status_hash, self)}
 			end
-
-			@activity = new_activity
-
-			# Call hook if a subclass implements the status name
-			hook = @activity.downcase.to_sym
-			send hook if respond_to? hook
     end
 	end
 

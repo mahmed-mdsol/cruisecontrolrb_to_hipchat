@@ -19,7 +19,14 @@ class Hipchat
     }
 
     def hip_post(message, options = {})
-      self.post("https://api.hipchat.com/v1/rooms/message?" + query_parameters(options.merge(:message => message)))
+      # Chunkify message in case the message is over the 10,000 characters limit
+      # Note, I'm chunkifying at 9,000 to account for the extra characters CGI::escape may end up adding. I know, I know, I should do this differently, it's a TODO, okay?
+      start, last = 0, 9_000
+      while start < message.length
+        self.post("https://api.hipchat.com/v1/rooms/message?" + query_parameters(options.merge(:message => message[start...last])))
+        start = last
+        last += 10_000
+      end
     end
 
     private

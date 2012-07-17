@@ -2,9 +2,9 @@
 :build_responses: 
   :pirate: 
     :responses: 
-      :success: We be sailin' on <a href='%s'>a sea o' blue</a>, mateys!
-      :building: Ahoy! Set sail fer <a href='%s'>a new expedition</a>, ye lily-livered bilgerats!
-      :failed: Aye, <a href='%s'>some scurvy knaves</a> be walkin' the plank.
+      :success: "We be sailin' on <a href='%s'>a sea o' blue</a>, mateys!"
+      :building: "Ahoy! Set sail fer <a href='%s'>a new expedition</a>, ye lily-livered bilgerats!"
+      :failed: "Aye, <a href='%s'>some scurvy knaves</a> be walkin' the plank."
     :colors: 
       :success: green
       :building: yellow
@@ -12,7 +12,7 @@
   :normal: 
     :responses: 
       :success: "Current build status: <a href='%s'>Success</a>"
-      :building: CruiseControl has started a <a href='%s'>build</a>.
+      :building: "CruiseControl has started a <a href='%s'>build</a>."
       :failed: "Current build status: <a href='%s'>Failed</a>"
     :colors: 
       :success: green
