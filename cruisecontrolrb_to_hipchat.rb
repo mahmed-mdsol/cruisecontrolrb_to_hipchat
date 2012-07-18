@@ -26,17 +26,16 @@ class CruisecontrolrbToHipchat < Sinatra::Base
     "howdy!"
   end
 
-  get "/config" do
+  get "/config/?" do
     "TODO: This page!"
   end
 
   # TODO Refactor this
-  get "/scores" do
+  get "/scores/?" do
     # TODO Extract achievements and scores module to include in all achievements/scores
     require 'responder_callbacks/blamer'
     require 'responder_callbacks/smurf_award'
     if File.exists?(Blamer::BLAME_FILE)
-      achievements = SmurfAward.read_achievements
       html = "
       <html>
       <head>
@@ -54,6 +53,7 @@ class CruisecontrolrbToHipchat < Sinatra::Base
       <body>
       <table cellpadding='10px'><tr><th>Committer</th><th>Score</th><th>Achievements</th></tr>"
       scores = YAML::load(File.open(Blamer::BLAME_FILE, 'r'))
+      achievements = SmurfAward.read_achievements
       players = (scores.keys + achievements.keys).uniq.sort{|p1, p2| -(scores[p1].to_i <=> scores[p2].to_i)} # Sort by score
       html += players.collect{|player| "<tr><td>#{player}</td><td>#{scores[player].to_i}</td><td>#{achievements[player].keys.sort.join if achievements[player]}</td></tr>"}.join + "</table></body></html>"
       html

@@ -45,7 +45,7 @@ class SmurfAward < ResponderCallback
 		if File.exists?(ACHIEVEMENTS_FILE)
 			return YAML::load(File.open(ACHIEVEMENTS_FILE, 'r'))
 		else
-			File.open(ACHIEVEMENTS_FILE, 'w'){|f| YAML::dump({})}
+			write_achievements({})
 			return {}
 		end
 	end
