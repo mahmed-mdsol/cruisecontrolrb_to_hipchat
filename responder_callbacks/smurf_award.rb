@@ -17,7 +17,6 @@ class SmurfAward < ResponderCallback
 			if smurfed
 				committers = source.scan(/committed by (.+?) &lt;/).flatten.uniq # get the committers who are a part of the smurf cruise!
 				achievements = read_achievements
-					puts achievements.inspect
 				committers.each do |committer|
 					committer = committer.strip
 					achievements[committer] ||= {}
@@ -28,8 +27,8 @@ class SmurfAward < ResponderCallback
 			end
 		end
 	end
-
-	private
+	
+	# TODO Extract to an achievements module to include in all achievements
 
 	def read_achievements
 		self.class.read_achievements

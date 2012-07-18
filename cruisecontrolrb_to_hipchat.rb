@@ -1,11 +1,9 @@
 require "sinatra/base"
 require 'yaml'
-require "./cruise_responder"
+require "cruise_responder"
 
+# TODO: Clean this up and make it a proper MVC web app.
 class CruisecontrolrbToHipchat < Sinatra::Base
-    
-  attr_accessor :status
-  attr_accessor :activity
   
   responder = CruiseResponderTask.new( (ENV['CAPN_CRUISE_LOCALE'] || 'normal').downcase.to_sym )
 
@@ -19,6 +17,10 @@ class CruisecontrolrbToHipchat < Sinatra::Base
   
   scheduler = Rufus::Scheduler.start_new
   scheduler.every("#{ENV["POLLING_INTERVAL"] || 1}m", responder)
+
+  ########################################################################
+  # SERVER
+  ########################################################################
   
   get "/" do
     "howdy!"
@@ -29,12 +31,30 @@ class CruisecontrolrbToHipchat < Sinatra::Base
   end
 
   get "/scores" do
+    # TODO Extract achievements and scores module to include in all achievements/scores
     require 'responder_callbacks/blamer'
+    require 'responder_callbacks/smurf_award'
     if File.exists?(Blamer::BLAME_FILE)
-      html = "<table><tr><th>Committer</th><th>Score</th></tr>"
+      achievements = SmurfAward.read_achievements
+      html = "
+      <html>
+      <head>
+      <title>Scores</title>
+      <style type='text/css'>
+        table img {
+          width: 3em;
+          height: 3em;
+        }
+        table {
+          text-align: center;
+        }
+      </style>
+      </head>
+      <body>
+      <table cellpadding='10px'><tr><th>Committer</th><th>Score</th><th>Achievements</th></tr>"
       scores = YAML::load(File.open(Blamer::BLAME_FILE, 'r'))
-      players = scores.keys.sort
-      html += players.collect{|player| "<tr><td>#{player}</td><td>#{scores[player]}</td></tr>"}.join + "</table>"
+      players = (scores.keys + achievements.keys).uniq.sort{|p1, p2| -(scores[p1].to_i <=> scores[p2].to_i)} # Sort by score
+      html += players.collect{|player| "<tr><td>#{player}</td><td>#{scores[player].to_i}</td><td>#{achievements[player].keys.sort.join}</td></tr>"}.join + "</table></body></html>"
       html
     else
       "No scores to show, bruh."

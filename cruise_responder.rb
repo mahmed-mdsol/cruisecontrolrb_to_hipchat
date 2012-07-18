@@ -89,12 +89,11 @@ class CruiseResponderTask
 				# Interpolate the build_url into the response and the lastBuildStatus if needed
 				status_sym = new_activity.downcase.to_sym
 				message = (responses[status_sym] || '') % [status_hash[:build_url], status_hash[:lastBuildStatus]]
-				
 				unless message.empty?
 					# Callbacks
 					callbacks.each{|callback| callback.before_response(status_hash, self)}
 
-					Hipchat.hip_post(message, :color => colors[status_sym]) unless message.empty?
+					Hipchat.hip_post(message, :color => colors[status_sym])
 
 					@activity = new_activity
 					# Call callbacks
