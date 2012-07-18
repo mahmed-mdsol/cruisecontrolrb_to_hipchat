@@ -72,6 +72,11 @@ ENV["CC_PASSWORD"] = ""
 # CAPN_CRUISE Stuff!
 ENV['CAPN_CRUISE_LOCALE'] = 'pirate' # Right now, only pirate and normal are available
 ENV['CAPN_CRUISE_CALLBACKS'] = "Blamer, CovCukeNotifier" # Note that these'll be loaded and run in order
+
+require 'run' # Run it!
+# Alternatively, you can fork and forget:
+# Process.detach(fork{ require 'run' })
+
 ```
 
 To actually run it...
