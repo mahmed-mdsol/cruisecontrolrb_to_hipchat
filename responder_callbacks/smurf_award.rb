@@ -7,7 +7,7 @@ require 'hipchat'
 # TODO: A general achievements class with custom achievement subclasses
 class SmurfAward < ResponderCallback
 	ACHIEVEMENTS_FILE = 'achievements.yml'
-	SMURF_ACHIEVEMENT = '<img src="/images/smurf_icon.gif" alt="Smurf Cruise Award" title="Smurf Cruise Award" />'
+	SMURF_ACHIEVEMENT = '<img src="/images/smurf_icon.gif" alt="Smurf Cruise - For contributing to an all-blue cruise" title="Smurf Cruise - For contributing to an all-blue cruise" />'
 
 	def after_response(status_hash, responder)
 		if status_hash[:activity] =~ /Success/i
@@ -17,13 +17,16 @@ class SmurfAward < ResponderCallback
 			if smurfed
 				committers = source.scan(/committed by (.+?) &lt;/).flatten.uniq # get the committers who are a part of the smurf cruise!
 				achievements = read_achievements
+
+				new_smurfs = []
 				committers.each do |committer|
 					committer = committer.strip
 					achievements[committer] ||= {}
+					new_smurfs << committer unless achievements[committer][SMURF_ACHIEVEMENT]
 					achievements[committer][SMURF_ACHIEVEMENT] = true
 				end
 				write_achievements(achievements)
-				Hipchat.hip_post("<b>Achievement Unlocked: <i>Smurf Cruise!</i></b><br>+1 and achievement awarded to #{committers.join(', ')}!", :color => 'purple')
+				Hipchat.hip_post("<b>Achievement Unlocked: <i>Smurf Cruise!</i></b><br>Achievement awarded to the following committers: #{new_smurfs.join(', ')}!", :color => 'purple') unless new_smurfs.empty?
 			end
 		end
 	end
