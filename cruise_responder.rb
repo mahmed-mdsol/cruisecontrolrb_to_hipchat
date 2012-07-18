@@ -75,29 +75,54 @@ class CruiseResponderTask
     localized[:colors]
   end
 
+  def each_callback
+    callbacks.each do |callback|
+      begin
+        yield(callback)
+      rescue Exception => e
+        STDERR.puts "#{callback.inspect} raised #{e}"
+      end
+    end
+  end
+
+
   # The task to perform every interval
   def call(job)
     # TODO support multiple projects
     status_hash = ccrb.fetch
     unless status_hash.empty?
       new_activity = status_hash[:activity]
+      build_label = status_hash[:lastBuildLabel]
 
-      if @activity != new_activity
-        # The activity changed
+      # TODO this feels like a hack
+      # It seems that the activity can stay the same between builds so check for a build label change to see if you missed the switch.
+      # change will be Success/Failed if the build label changed, but if the build label stays the same, chances are we're building (new_activity)
+      change = 
+        if @last_build != build_label
+          status_hash[:lastBuildStatus]
+        elsif @activity != new_activity
+          new_activity
+        else
+          nil
+        end
+      
+      if change
+        # There was a change!
         # Notify the hipsters!
 
         # Interpolate the build_url into the response and the lastBuildStatus if needed
-        status_sym = new_activity.downcase.to_sym
+        status_sym = change.downcase.strip.to_sym
         message = (responses[status_sym] || '') % [status_hash[:build_url], status_hash[:lastBuildStatus]]
         unless message.empty?
           # Callbacks
-          callbacks.each{|callback| callback.before_response(status_hash, self)}
+          each_callback{|callback| callback.before_response(status_hash, self)}
 
           Hipchat.hip_post(message, :color => colors[status_sym])
 
-          @activity = new_activity
+          @activity = change
+          @last_build = build_label
           # Call callbacks
-          callbacks.each{|callback| callback.after_response(status_hash, self)}
+          each_callback{|callback| callback.after_response(status_hash, self)}
         end
       end
     end
