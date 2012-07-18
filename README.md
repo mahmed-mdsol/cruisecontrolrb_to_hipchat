@@ -83,7 +83,7 @@ To actually run it...
 
 ```
 bundle install
-bundle exec ruby -r conf run.rb
+bundle exec ruby conf.rb
 ```
 
 That's all, folks! :D
