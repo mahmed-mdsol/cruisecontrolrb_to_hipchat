@@ -30,6 +30,7 @@ class CruisecontrolrbToHipchat < Sinatra::Base
     "TODO: This page!"
   end
 
+  # TODO Refactor this
   get "/scores" do
     # TODO Extract achievements and scores module to include in all achievements/scores
     require 'responder_callbacks/blamer'
@@ -54,7 +55,7 @@ class CruisecontrolrbToHipchat < Sinatra::Base
       <table cellpadding='10px'><tr><th>Committer</th><th>Score</th><th>Achievements</th></tr>"
       scores = YAML::load(File.open(Blamer::BLAME_FILE, 'r'))
       players = (scores.keys + achievements.keys).uniq.sort{|p1, p2| -(scores[p1].to_i <=> scores[p2].to_i)} # Sort by score
-      html += players.collect{|player| "<tr><td>#{player}</td><td>#{scores[player].to_i}</td><td>#{achievements[player].keys.sort.join}</td></tr>"}.join + "</table></body></html>"
+      html += players.collect{|player| "<tr><td>#{player}</td><td>#{scores[player].to_i}</td><td>#{achievements[player].keys.sort.join if achievements[player]}</td></tr>"}.join + "</table></body></html>"
       html
     else
       "No scores to show, bruh."
