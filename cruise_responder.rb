@@ -85,46 +85,56 @@ class CruiseResponderTask
     end
   end
 
+  def notify_hipsters(status_hash)
+    # Notify the hipsters!
+
+    # Interpolate the build_url into the response and the lastBuildStatus if needed
+    status_sym = activity.to_s.downcase.strip.to_sym
+    message = (responses[status_sym] || '') % [status_hash[:build_url], status_hash[:lastBuildStatus]]
+
+    unless message.empty?
+      # Callbacks
+      # TODO Rework callbacks 
+      each_callback{|callback| callback.before_response(status_hash, self)}
+
+      Hipchat.hip_post(message, :color => colors[status_sym])
+
+      # Call callbacks
+      each_callback{|callback| callback.after_response(status_hash, self)}
+    end
+  end
+
 
   # The task to perform every interval
   def call(job)
     # TODO support multiple projects
     status_hash = ccrb.fetch
+
     unless status_hash.empty?
+      old_activity = @activity
       new_activity = status_hash[:activity]
       build_label = status_hash[:lastBuildLabel]
+
+      #TODO proper logging
 
       # TODO this feels like a hack
       # It seems that the activity can stay the same between builds so check for a build label change to see if you missed the switch.
       # change will be Success/Failed if the build label changed, but if the build label stays the same, chances are we're building (new_activity)
-      change = 
-        if @last_build != build_label
-          status_hash[:lastBuildStatus]
-        elsif @activity != new_activity
-          new_activity
-        else
-          nil
-        end
-      
-      if change
-        # There was a change!
-        # Notify the hipsters!
 
-        # Interpolate the build_url into the response and the lastBuildStatus if needed
-        status_sym = change.downcase.strip.to_sym
-        message = (responses[status_sym] || '') % [status_hash[:build_url], status_hash[:lastBuildStatus]]
-        unless message.empty?
-          # Callbacks
-          each_callback{|callback| callback.before_response(status_hash, self)}
-
-          Hipchat.hip_post(message, :color => colors[status_sym])
-
-          @activity = change
-          @last_build = build_label
-          # Call callbacks
-          each_callback{|callback| callback.after_response(status_hash, self)}
-        end
+      # TODO this sucks. It's ugly. Clean it up. Rework callbacks (what should they take and what should the args be?) and rethink this activity stuff.
+      if @last_build != build_label
+        # If the build has changed, notify about the last build's status
+        @activity = status_hash[:lastBuildStatus]
+        notify_hipsters(status_hash)
       end
+
+      if old_activity != new_activity
+        # If the activity is different, notify about that.
+        @activity = new_activity
+        notify_hipsters(status_hash)
+      end
+
+      @last_build = build_label
     end
   end
 

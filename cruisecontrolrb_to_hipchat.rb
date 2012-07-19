@@ -30,7 +30,6 @@ class CruisecontrolrbToHipchat < Sinatra::Base
     "TODO: This page!"
   end
 
-  # TODO Refactor this
   get "/scores/?" do
     # TODO Extract achievements and scores module to include in all achievements/scores
     require 'responder_callbacks/blamer'

@@ -8,15 +8,17 @@ class CovCukeNotifier < ResponderCallback
 
 	# On failure, send cruise:coverage and cucumber failures to hipchat.
 	def after_response(status_hash, responder)
-		build_url = URI.parse(status_hash[:build_url])
-		source = Net::HTTP.get(build_url.host, build_url.path)
-		log = Nokogiri::HTML.parse(source).css('.logfile').to_s
+		if responder.activity =~ /fail/i
+			build_url = URI.parse(status_hash[:build_url])
+			source = Net::HTTP.get(build_url.host, "#{build_url.path}/artifacts/build.log")
+			#log = Nokogiri::HTML.parse(source).css('.logfile').to_s
 
-		covout = specs_cov_failures(log)
-		cukeout = cucumber_failures(log)
-		Hipchat.hip_post("<pre>Specs and Coverage Failures:\n#{covout}</pre>", :color => 'red') unless covout.empty?
-		# Cuke output separated by failing steps and failing scenarios.
-		cukeout.each { |out| Hipchat.hip_post("<pre>#{out.strip}</pre>", :color => 'red') } unless cukeout.empty?
+			covout = specs_cov_failures(source)
+			cukeout = cucumber_failures(source)
+			Hipchat.hip_post("<pre>Specs and Coverage Failures:\n#{covout}</pre>", :color => 'red') unless covout.empty?
+			# Cuke output separated by failing steps and failing scenarios.
+			cukeout.each { |out| Hipchat.hip_post("<pre>#{out.strip}</pre>", :color => 'red') } unless cukeout.empty?
+		end
 	end
 
 	# Note: These are shamelessly tailored to our setup. Ideally, this should be more general, but you can always

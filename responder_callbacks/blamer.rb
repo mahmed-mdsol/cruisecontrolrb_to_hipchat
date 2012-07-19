@@ -5,6 +5,7 @@ require 'yaml'
 require 'responder_callback'
 require 'hipchat'
 
+#TODO Eventually rename this as Scorer
 class Blamer < ResponderCallback
 
 	BLAME_FILE = './blames.yml'
@@ -25,9 +26,11 @@ class Blamer < ResponderCallback
 			source = Net::HTTP.get(build_url.host, build_url.path)
 			the_committers = committers(source)
 			# Send the committers as @Mentions 
-			mentioned_committers = the_committers.collect{|c| "@#{c.gsub(' ', '')}"}.join(', ')
-			Hipchat.hip_post("#{plus_or_minus}1 to #{mentioned_committers}", :color => color, :message_format => 'text')
-			update_scores(the_committers, plus_or_minus == '+' ? 1 : -1)
+			mentioned_committers = the_committers.join(', ') #the_committers.collect{|c| "@#{c.gsub(' ', '')}"}.join(', ')
+			unless mentioned_committers.empty?
+				Hipchat.hip_post("<a href='#{SCORES_URL}'>#{plus_or_minus}1</a> to #{mentioned_committers}", :color => color)
+				update_scores(the_committers, plus_or_minus == '+' ? 1 : -1)
+			end
 		end
 	end
 
@@ -38,7 +41,7 @@ class Blamer < ResponderCallback
 	end
 
 	def committers(src)
-		changes = Nokogiri::HTML.parse(src).search("[text()*='Build Changeset']").first.next_element.to_s
+		changes = Nokogiri::HTML.parse(src).css('#build_changeset .terminal_output').to_s
 		committers = changes.scan(/committed by (.+) *&lt;/).flatten.collect(&:strip).uniq
 	end
 

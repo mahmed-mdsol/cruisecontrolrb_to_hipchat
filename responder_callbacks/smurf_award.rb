@@ -10,9 +10,9 @@ class SmurfAward < ResponderCallback
 	SMURF_ACHIEVEMENT = '<img src="/images/smurf_icon.gif" alt="Smurf Cruise - For contributing to an all-blue cruise" title="Smurf Cruise - For contributing to an all-blue cruise" />'
 
 	def after_response(status_hash, responder)
-		if status_hash[:activity] =~ /Success/i
+		if responder.activity =~ /Success/i
 			base_url = responder.ccrb.base_url.gsub(/ *https?:\/\//, '').gsub(/\/ *$/, '')
-			source = Net::HTTP.get(base_url, '/')
+			source = Net::HTTP.get(base_url, status_hash[:builds_path])
 			smurfed = Nokogiri::HTML.parse(source).css('.failed').length == 0
 			if smurfed
 				committers = source.scan(/committed by (.+?) &lt;/).flatten.uniq # get the committers who are a part of the smurf cruise!
@@ -26,7 +26,8 @@ class SmurfAward < ResponderCallback
 					achievements[committer][SMURF_ACHIEVEMENT] = true
 				end
 				write_achievements(achievements)
-				Hipchat.hip_post("<b>Achievement Unlocked: <i>Smurf Cruise!</i></b><br>Achievement awarded to the following committers: #{new_smurfs.join(', ')}!", :color => 'purple') unless new_smurfs.empty?
+        # TODO Put routes in the proper place
+				Hipchat.hip_post("<b>Achievement Unlocked: <i>Smurf Cruise!</i></b><br><a href='#{SCORES_URL}'>Achievement awarded</a> to the following committers: #{new_smurfs.join(', ')}!", :color => 'purple') unless new_smurfs.empty?
 			end
 		end
 	end

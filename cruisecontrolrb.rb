@@ -29,8 +29,8 @@ class Cruisecontrolrb
     # Make sure webUrl uses base_url. The response from cruise may use localhost instead of base_url, so use :url over :webUrl
     # Also, you want to go to */builds/* instead of */projects/*
     # I'm keeping webUrl in the status_hash so that it correctly represents the returned response from the server.
-    builds_path = URI.parse(status_hash[:webUrl]).path.gsub('projects', 'builds')
-    status_hash[:build_url] = "#{base_url}#{builds_path}/#{status_hash[:lastBuildLabel]}"
+    status_hash[:builds_path] = URI.parse(status_hash[:webUrl]).path.gsub('projects', 'builds')
+    status_hash[:build_url] = "#{base_url}#{status_hash[:builds_path]}/#{status_hash[:lastBuildLabel]}"
     status_hash
   end
   
