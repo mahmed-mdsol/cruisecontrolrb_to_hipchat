@@ -1,5 +1,3 @@
-require 'net/http'
-require 'nokogiri'
 require 'uri'
 require 'responder_callback'
 require 'hipchat'
