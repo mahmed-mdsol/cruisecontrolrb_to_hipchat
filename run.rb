@@ -5,4 +5,5 @@ def run(cls)
   File.open('capn.pid', 'w'){|f| f.puts(Process.pid)}
 end
 
+$:<< '.'
 load './config.ru'
